@@ -8,6 +8,19 @@ Dockerを使ってみるだけのリポジトリ
 
 ![仮想環境のイメージ図](https://user-images.githubusercontent.com/91645837/211927857-727908ff-ee37-4f8a-a3df-5edd82269ab0.png)
 
+### コンテナ型とは
+
+ホストOSを動かしているカーネルを利用して、あたかもゲストOSがあるように仮想環境を作成する。
+コンテナ型でない仮想環境の例として、仮想マシンが挙げられる。VirtualBox等の仮想マシンでは、ホストOS上で仮想化ソフト(Hypervisor等)を利用しゲストOSを動かす。その上でミドルウェアなどを動かす。そのうえでコンテナはホストマシンのカーネルを利用し、プロセスやユーザなどを隔離しつつミドルウェアを別のマシンで動かしているように見せられる。ホストマシンのカーネルを利用するため、軽量で高速に起動、停止が可能である。
+
+![コンテナ型と仮想マシンの比較画像](https://user-images.githubusercontent.com/91645837/211934702-1cab6257-033a-41f4-a55d-da89319a3dc8.png)
+
+### Dockerのメリット
+
+- どのコンピュータ上でも全く同じ環境を作り出すことができる。
+- 作成した環境を配布しやすい。
+- スクラップ＆ビルドが容易にできる。
+
 ## Dockerのインストール
 
 Dockerのインストールは公式サイトから行うことができます。
@@ -15,5 +28,86 @@ Dockerのインストールは公式サイトから行うことができます�
 - [Docker公式ページ](https://www.docker.com/)
 - [インストール方法(公式)](https://matsuand.github.io/docs.docker.jp.onthefly/get-docker/)
 
+Dockerがインストールされているか確認するにはターミナルで以下を実行
 
+```bash
+docker --version
+```
 
+## Dockerを使ってみる
+
+今回はコンテナをPullしてから起動、停止までの流れを行う。
+
+### イメージのPull
+
+[DockerHub](https://hub.docker.com/)のページでMySqlを検索
+
+![検索時の画像](https://user-images.githubusercontent.com/91645837/211936125-20318254-f45d-4d5e-b62e-f4ca070b3416.png)
+
+mysqlを開くとすると使用方法やサンプルコマンドなどが記載されている。
+記載されているコマンドをターミナルで実行するとコンテナイメージをローカルにダウンロードできる。
+
+```bash
+docker pull mysql
+```
+
+ダウンロードされているイメージの一覧を確認するには以下のコマンドを実行
+
+```bash
+docker images
+```
+
+### コンテナの起動
+
+コンテナを起動するためのコマンドの基本的な形式
+
+```bash
+docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
+```
+
+実行するコマンド
+
+```bash
+docker run --name lec-mysql -p 13306:3306 -e MYSQL_ROOT_PASSWORD=1q2w3e4r5t -d mysql
+```
+
+#### コマンドのタグの意味
+
+- `--name` コンテナの名前を指定する
+- `-p` ローカルPCのポート:コンテナ側のポートのそれぞれを設定
+- `-e` コンテナの環境変数を設定する
+- `-d` デタッチドモードで実行（バックグラウンドで実行）
+
+#### 変更部分について
+
+- `some-mysql`　コンテナに割り当てる名前
+- `my-secret-pw` MySqlのrootユーザに設定するパスワード
+- `tag` MySqlのバージョンを指定する：バージョンは先ほどのページのtagから確認することができる。
+
+起動しているコンテナの情報を表示
+
+```bash
+docker ps
+```
+
+### コンテナの操作
+
+コンテナの中に入るには以下のコマンドを実行
+
+```bash
+docker exec -it lec-mysql bash
+```
+
+- `-it` コンテナ内の操作を使っているコンソールから操作できる
+- `exec` コンテナの中に入る
+- `bash` コンテナ内でbashを利用する
+
+#### MySqlを使用する
+
+コンテナ内で以下のコマンドを実行
+
+```bash
+mysql -u root -p
+```
+
+その後先ほど設定したパスワードを入力することでmysqlの操作を行うことができる。
