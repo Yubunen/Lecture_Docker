@@ -65,12 +65,6 @@ docker images
 docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
 ```
 
-実行するコマンド
-
-```bash
-docker run --name lec-mysql -p 13306:3306 -e MYSQL_ROOT_PASSWORD=1q2w3e4r5t -d mysql
-```
-
 #### コマンドのタグの意味
 
 - `--name` コンテナの名前を指定する
@@ -83,6 +77,12 @@ docker run --name lec-mysql -p 13306:3306 -e MYSQL_ROOT_PASSWORD=1q2w3e4r5t -d m
 - `some-mysql`　コンテナに割り当てる名前
 - `my-secret-pw` MySqlのrootユーザに設定するパスワード
 - `tag` MySqlのバージョンを指定する：バージョンは先ほどのページのtagから確認することができる。
+
+上記を踏まえて実行するコマンド
+
+```bash
+docker run --name lec-mysql -p 13306:3306 -e MYSQL_ROOT_PASSWORD=1q2w3e4r5t -d mysql
+```
 
 起動しているコンテナの情報を表示
 
@@ -104,10 +104,124 @@ docker exec -it lec-mysql bash
 
 #### MySqlを使用する
 
-コンテナ内で以下のコマンドを実行
+実際にMySqlを利用してみるが細かな説明は省く。
+
+##### MySqlへログイン
+
+コンテナ内で以下を実行
 
 ```bash
 mysql -u root -p
 ```
 
-その後先ほど設定したパスワードを入力することでmysqlの操作を行うことができる。
+実行後、先ほど設定したパスワードを入力することでmysqlの操作を行うことができる。
+
+##### データベースの操作
+
+適当なデータベースを作成しレコードを追加する
+
+```bash
+CREATE DATABASE lec_db;
+```
+
+```bash
+USE lec_db;
+```
+
+```bash
+CREATE TABLE users(
+    id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    name VARCHAR(50)
+    );
+)
+```
+
+```bash
+INSERT INTO users(name) values("Yubunen");
+```
+
+```bash
+exit
+```
+
+### コンテナから抜ける
+
+コンテナから抜けるには`Ctrl+Q`か以下のコマンドで抜けることができる。
+
+```bash
+exit
+```
+
+### コンテナの停止
+
+コンテナの停止には以下のコマンドを実行する。
+
+```bash
+docker stop lec-mysql
+```
+
+以下のコマンドで停止しているコンテナを確認
+
+```bash
+docker ps -a
+```
+
+- `-a` 停止している者も含めすべてのコンテナを表示
+
+### コンテナの再起動
+
+すでに作成しているコンテナを再度実行するには以下のコマンドを実行する。
+
+```bash
+docker start lec_mysql
+```
+
+### コンテナをローカルPCで利用する
+
+例として先ほど作成したデータベースをローカルPCのpythonで実行する
+
+#### Pythonスクリプトの作成
+
+以下の内容のPythonスクリプトを作成し実行する。
+
+```python
+import mysql.connector
+
+cnx = mysql.connector.connect(
+    user='root',
+    password='1q2w3e4r5t',
+    host='localhost',
+    port='13306'
+)
+cursor = cnx.cursor()
+cursor.execute('SELECT * FROM lec_db.users')
+
+for id, name in cursor:
+    print(f'{id}: {name}')
+
+cursor.close()
+```
+
+先ほどレコードに登録した情報が表示されればOK
+
+### コンテナの削除
+
+コンテナを`stop`で停止したのち、以下でコンテナを削除できる
+
+```bash
+docker rm lec-mysql
+```
+
+### イメージの削除
+
+コンテナイメージを削除するには以下のコマンドを実行
+
+```bash
+docker rmi mysql
+```
+
+削除されているか`images`で確認できる
+
+``` bash
+docker images
+```
