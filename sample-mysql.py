@@ -1,3 +1,4 @@
+#pip install mysql-connector-python
 import mysql.connector
 
 cnx = mysql.connector.connect(
